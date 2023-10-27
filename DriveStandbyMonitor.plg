@@ -1,0 +1,108 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "DriveStandbyMonitor">
+<!ENTITY author    "Eldon McGuinness">
+<!ENTITY version   "2023.10.28-4">
+<!ENTITY launch    "Tools/Log">
+<!ENTITY pluginURL "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
+<!ENTITY boot      "/boot/config/plugins/&name;">
+<!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+<!ENTITY source    "&boot;/&name;">
+<!ENTITY md5       "44252a88d327d9d53e595abded27b40b">
+]>
+
+<PLUGIN  name="&name;"
+         author="&author;"
+         version="&version;"
+         pluginURL="&pluginURL;"
+         icon="big green-text fa fa-leaf"
+         launch="&launch;">
+
+
+<!-- cron file for monitor.cron -->
+<FILE Name="&boot;/monitor.cron">
+  <INLINE>
+<![CDATA[
+# Generated for Drive Standby Monitor plugin
+*/15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor.sh
+]]>
+  </INLINE>
+</FILE>
+
+<!--
+Install the cron via this script as one can not call update_cron from the scripts directly.
+-->
+<FILE Name="/tmp/&name;_cron_installer" Mode="0770">
+  <INLINE>
+    #!/bin/bash
+
+    update_cron
+
+    # Remove the background start script.
+    rm -f /tmp/&name;_cron_installer 2>/dev/null
+  </INLINE>
+</FILE>
+
+<!-- Pre-Install -->
+<FILE Run="/bin/bash">
+  <INLINE>
+    # Remove old 'source' files
+    rm -f $(ls &boot;/&name;*.txz 2&gt;/dev/null | grep -v '&version;')
+    /usr/local/sbin/update_cron
+
+    sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );"
+  </INLINE>
+</FILE>
+
+<!-- Package Install -->
+<FILE Name="&source;.&version;.txz" Run="upgradepkg --install-new --reinstall">
+    <URL>https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/&name;.&version;.txz</URL>
+</FILE>
+
+<!-- default.cfg -->
+<FILE Name="&emhttp;/default.cfg">
+  <INLINE>
+<![CDATA[
+DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor"
+]]>
+  </INLINE>
+</FILE>
+
+<!-- Post-Install -->
+<FILE Run="/bin/bash">
+  <INLINE>
+    # Ensure permissions correct (not sure why needed as should already be OK, but apparently not always the case)
+    chmod -R 755 &emhttp;
+    chown -R root &emhttp;
+    chgrp -R root &emhttp;
+    chmod +x &emhttp;/monitor.sh
+
+    mkdir -p /tmp/&name;
+    
+    at -M -f /tmp/&name;_cron_installer now + 1 minute  2>/dev/null
+
+    echo '###############################################'
+    echo 'Install Complete'
+    echo ''
+    echo 'You will need to wait up to 20 minutes for the'
+    echo 'data collection to begin.'
+    echo ''
+    echo '###############################################'
+
+  </INLINE>
+</FILE>
+
+<!-- Removal -->
+<FILE Run="/bin/bash" Method="remove">
+  <INLINE>
+    
+    rm -fR &boot;/monitor.* /tmp/&name; &emhttp;/default.cfg
+    removepkg &name;.&version;.txz
+    rm &boot;/&name;*.txz
+    /usr/local/sbin/update_cron;
+
+  </INLINE>
+</FILE>
+
+</PLUGIN>
