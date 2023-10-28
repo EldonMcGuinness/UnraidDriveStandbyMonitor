@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "DriveStandbyMonitor">
 <!ENTITY author    "Eldon McGuinness">
-<!ENTITY version   "2023.10.28-4">
-<!ENTITY launch    "Tools/Log">
+<!ENTITY version   "2023.10.31-002">
+<!ENTITY launch    "Tools/StandbyAverages">
 <!ENTITY pluginURL "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
 <!ENTITY boot      "/boot/config/plugins/&name;">
 <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source    "&boot;/&name;">
-<!ENTITY md5       "44252a88d327d9d53e595abded27b40b">
+<!ENTITY md5       "7035fbfe510797049dff6a5521a2249d">
 ]>
 
 <PLUGIN  name="&name;"
@@ -19,6 +19,26 @@
          icon="big green-text fa fa-leaf"
          launch="&launch;">
 
+
+<CHANGES>
+##Drive Standby Monitor
+###&version;
+
+- Moved utility items and renamed a few things
+
+###2023.10.29-003
+
+- Added a DB reset option
+
+###2023.10.28-1;
+
+- Making it look pretty
+
+###2023.10.28-1;
+
+- First Stable Release
+
+</CHANGES>
 
 <!-- cron file for monitor.cron -->
 <FILE Name="&boot;/monitor.cron">
@@ -49,7 +69,7 @@ Install the cron via this script as one can not call update_cron from the script
   <INLINE>
     # Remove old 'source' files
     rm -f $(ls &boot;/&name;*.txz 2&gt;/dev/null | grep -v '&version;')
-    /usr/local/sbin/update_cron
+    rm -fR &emhttp;
 
     sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );"
   </INLINE>
@@ -99,7 +119,8 @@ DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor"
     
     rm -fR &boot;/monitor.* /tmp/&name; &emhttp;/default.cfg
     removepkg &name;.&version;.txz
-    rm &boot;/&name;*.txz
+    rm -fR &boot;
+    rm -fR &emhttp;
     /usr/local/sbin/update_cron;
 
   </INLINE>
