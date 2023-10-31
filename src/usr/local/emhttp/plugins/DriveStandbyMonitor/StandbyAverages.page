@@ -1,8 +1,8 @@
-Menu="DiskUtilities"
+Menu="DiskStandbyMonitor:1"
 Title="Standby Averages"
-Tabs="false"
 Type="xmenu"
-Icon="leaf"
+Icon="leaf green"
+Tag="leaf green"
 ---
 <?
 #Pull some default data

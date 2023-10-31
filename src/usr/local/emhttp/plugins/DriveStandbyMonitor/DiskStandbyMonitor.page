@@ -1,0 +1,7 @@
+Menu="DiskUtilities"
+Title="Disk Standby Monitor"
+Tabs="true"
+Type="xmenu"
+Icon="leaf green"
+Tag="leaf green"
+---
