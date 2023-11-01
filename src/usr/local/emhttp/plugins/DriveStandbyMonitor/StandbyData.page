@@ -87,14 +87,12 @@ $drives_result = $sqlite->query( $sql_drives );
         <div class="row head">
             <div>Drive</div>
             <div>Standby</div>
-            <div>Temperature (&deg;C)</div>
             <div>Time / Date</div>
         </div>
 <? while ($data = $data_result->fetchArray(SQLITE3_ASSOC)) { ?>
         <div class="row cell <?=$data['drive']?>">
             <div><?=$data['drive']?></div>
             <div><? echo ($data['state']) ? "Active" : "Standby"; ?></div>
-            <div><?=$data['temperature']?></div>
             <div><?echo date("H:i:s / Y-m-d", $data['date']); ?></div>
         </div>
 <? } ?>

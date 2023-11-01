@@ -21,12 +21,7 @@ for l in /dev/sd?; do
           STANDBY_STATUS=1
         fi
 
-        TEMPERATURE=$(smartctl -A /dev/sd$i | grep Temperature_Celsius | awk {'print $10'})
-        if [ "$TEMPERATURE" == "" ]; then
-                TEMPERATURE=0
-        fi
-
-        sqlite3 "/boot/config/plugins/DriveStandbyMonitor/monitor.db" "INSERT INTO 'standby' ('drive', 'state', 'temperature', 'date') VALUES ('sd$i', $STANDBY_STATUS, $TEMPERATURE, $DATE);"
+        sqlite3 "/boot/config/plugins/DriveStandbyMonitor/monitor.db" "INSERT INTO 'standby' ('drive', 'state', 'date') VALUES ('sd$i', $STANDBY_STATUS, $DATE);"
 done;
 
 rm "$PID"
