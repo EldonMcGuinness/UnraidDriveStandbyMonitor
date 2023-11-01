@@ -1,4 +1,4 @@
-Menu="DriveStandbyMonitor:"
+Menu="DriveStandbyMonitor:1"
 Title="Standby Averages"
 Tag="leaf green"
 Markdown="false"

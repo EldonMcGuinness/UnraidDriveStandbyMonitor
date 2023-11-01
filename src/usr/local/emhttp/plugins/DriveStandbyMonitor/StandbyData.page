@@ -15,79 +15,110 @@ $DB_LOCATION = $defaults["DB_LOCATION"];
 $DB_FILE = "${DB_LOCATION}/monitor.db";
 $DRIVE_STATUS = array();
 
-$sql_standby = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
+$sql_data = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
+$sql_drives = "SELECT 'standby'.'drive' from 'standby' group by 'standby'.'drive' order by 'standby'.'drive' ASC;";
 
 # Get the DB info and data on the drives
 $sqlite = new SQLite3( $DB_FILE );
-$results = $sqlite->query( $sql_standby );
+$data_result = $sqlite->query( $sql_data );
+$drives_result = $sqlite->query( $sql_drives );
 ?>
 
 <style type="text/css">
-    .wrapper {
+    .inner-wrapper {
         margin: 48px;
         text-align: center;
     }
 
-    .wrapper table {
-        border: solid 1px #333;
+    .inner-wrapper .table {
+
+        margin-top:24px;
     }
 
-    .wrapper tr {
-        border:solid 1px #333;
-        border-radius: 0px 0px 0px 0px;
+    .inner-wrapper .table .row {
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        height:26px;
+        overflow:hidden;
     }
 
-    .wrapper thead {
+    .inner-wrapper .table .row div{
+        width:100%;
+        padding: 5px;
+    }
+
+    .inner-wrapper .table .row.head {
         position: sticky;
         top: 39px;
-    }
-
-    .wrapper thead tr {
         background: #e8e8e8;
     }
 
+    .inner-wrapper  .table .row.cell.hidden {
+        height:0px;
+    }
 
-    .wrapper tbody tr:nth-child(even) {
+    .inner-wrapper  .table .row.cell:nth-child(even) {
         background: #ffffff;
     }
 
-    .wrapper tbody tr:nth-child(odd) {
+    .inner-wrapper .table  .row.cell:nth-child(odd) {
         background: #f5f5f5;
     }
-    
-    .wrapper tbody tr:hover {
+
+    .inner-wrapper .table .row.cell:hover {
         background: #c6c6c6;
     }
 
-#c6c6c6
-
 </style>    
 
-<div class="wrapper">
-    <table>
-        <thead>
-            <tr>
-                <td>Drive</td>
-                <td>Standby</td>
-                <td>Temperature (&deg;C)</td>
-                <td>Time / Date</td>
-            </tr>
-        </thead>
-
-        <tbody>
-
-<? while ($data = $results->fetchArray(SQLITE3_ASSOC)) { ?>
-            <tr>
-                <td><?=$data['drive']?></td>
-                <td><? echo ($data['state']) ? "Active" : "Standby"; ?></td>
-                <td><?=$data['temperature']?></td>
-                <td><?echo date("H:i:s / Y-m-d
-
-
-
-", $data['date']); ?></td>
-            </tr>
+<div class="inner-wrapper">
+    <div>
+        <span>Show Only:</span>
+        <select id="show-only">
+            <option value="all">All</option>
+        <? while ($drives = $drives_result->fetchArray()) { ?>
+            <option value="<?=$drives['drive']?>"><?=$drives['drive']?></option>
+        <? } ?>
+        </select>
+    </div>
+    <div class="table">
+        <div class="row head">
+            <div>Drive</div>
+            <div>Standby</div>
+            <div>Temperature (&deg;C)</div>
+            <div>Time / Date</div>
+        </div>
+<? while ($data = $data_result->fetchArray(SQLITE3_ASSOC)) { ?>
+        <div class="row cell <?=$data['drive']?>">
+            <div><?=$data['drive']?></div>
+            <div><? echo ($data['state']) ? "Active" : "Standby"; ?></div>
+            <div><?=$data['temperature']?></div>
+            <div><?echo date("H:i:s / Y-m-d", $data['date']); ?></div>
+        </div>
 <? } ?>
 
-        </tbody>
-    </tab
+    </div>
+</div>
+<script type="text/javascript">
+document.addEventListener( 'DOMContentLoaded', () => {
+    document.querySelector("#show-only").addEventListener("change", (e) => {
+
+        let rows = document.querySelectorAll(".table .row.cell");
+        let selected = e.target.value;
+
+        for ( let row of rows ){
+            if ( row.classList.contains( selected ) || selected == "all" ) {
+                row.classList.remove( "hidden" );
+
+            } else {
+                row.classList.add( "hidden" );
+
+            }
+
+        }
+        
+    });
+});
+</script>

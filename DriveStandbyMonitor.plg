@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "DriveStandbyMonitor">
 <!ENTITY author    "Eldon McGuinness">
-<!ENTITY version   "2023.10.31-007">
+<!ENTITY version   "2023.11.01-003">
 <!ENTITY launch    "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
 <!ENTITY boot      "/boot/config/plugins/&name;">
 <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source    "&boot;/&name;">
-<!ENTITY md5       "d43463d9caa399843ac891d22d47236f">
+<!ENTITY md5       "193c4b58ceb40a7737c410324487c213">
 ]>
 
 <PLUGIN  name="&name;"
@@ -23,6 +23,10 @@
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Added Data List Filtering
+
+###2023.10.31-007
 
 - Moved utility items and renamed a few things
 
