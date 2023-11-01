@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "DriveStandbyMonitor">
 <!ENTITY author    "Eldon McGuinness">
-<!ENTITY version   "2023.10.31-005">
-<!ENTITY launch    "Tools/StandbyAverages">
+<!ENTITY version   "2023.10.31-007">
+<!ENTITY launch    "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
 <!ENTITY boot      "/boot/config/plugins/&name;">
 <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source    "&boot;/&name;">
-<!ENTITY md5       "e898a789f9fb3ee43473cbb574aa104e">
+<!ENTITY md5       "d43463d9caa399843ac891d22d47236f">
 ]>
 
 <PLUGIN  name="&name;"
@@ -71,7 +71,7 @@ Install the cron via this script as one can not call update_cron from the script
     rm -f $(ls &boot;/&name;*.txz 2&gt;/dev/null | grep -v '&version;')
     rm -fR &emhttp;
 
-    sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );"
+    sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, temperature INTEGER, date INTEGER );"
     
     # Make sure we upgrade any existing databases to capture temperature
     sqlite3 "&boot;/monitor.db" "ALTER TABLE 'standby' ADD COLUMN temperature INTEGER;" || true 2> /dev/null

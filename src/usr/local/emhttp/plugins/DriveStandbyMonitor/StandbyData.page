@@ -1,0 +1,93 @@
+Menu="DriveStandbyMonitor:2"
+Title="Standby Data"
+Tag="table"
+Markdown="false"
+---
+<?
+#Pull some default data
+libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$script = "DriveStandbyMonitor";
+$defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
+$DB_LOCATION = $defaults["DB_LOCATION"];
+
+
+$DB_FILE = "${DB_LOCATION}/monitor.db";
+$DRIVE_STATUS = array();
+
+$sql_standby = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
+
+# Get the DB info and data on the drives
+$sqlite = new SQLite3( $DB_FILE );
+$results = $sqlite->query( $sql_standby );
+?>
+
+<style type="text/css">
+    .wrapper {
+        margin: 48px;
+        text-align: center;
+    }
+
+    .wrapper table {
+        border: solid 1px #333;
+    }
+
+    .wrapper tr {
+        border:solid 1px #333;
+        border-radius: 0px 0px 0px 0px;
+    }
+
+    .wrapper thead {
+        position: sticky;
+        top: 39px;
+    }
+
+    .wrapper thead tr {
+        background: #e8e8e8;
+    }
+
+
+    .wrapper tbody tr:nth-child(even) {
+        background: #ffffff;
+    }
+
+    .wrapper tbody tr:nth-child(odd) {
+        background: #f5f5f5;
+    }
+    
+    .wrapper tbody tr:hover {
+        background: #c6c6c6;
+    }
+
+#c6c6c6
+
+</style>    
+
+<div class="wrapper">
+    <table>
+        <thead>
+            <tr>
+                <td>Drive</td>
+                <td>Standby</td>
+                <td>Temperature (&deg;C)</td>
+                <td>Time / Date</td>
+            </tr>
+        </thead>
+
+        <tbody>
+
+<? while ($data = $results->fetchArray(SQLITE3_ASSOC)) { ?>
+            <tr>
+                <td><?=$data['drive']?></td>
+                <td><? echo ($data['state']) ? "Active" : "Standby"; ?></td>
+                <td><?=$data['temperature']?></td>
+                <td><?echo date("H:i:s / Y-m-d
+
+
+
+", $data['date']); ?></td>
+            </tr>
+<? } ?>
+
+        </tbody>
+    </tab

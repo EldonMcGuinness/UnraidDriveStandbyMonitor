@@ -1,7 +1,6 @@
 Menu="DiskUtilities"
-Title="Disk Standby Monitor"
+Title="Drive Standby Monitor"
 Tabs="true"
 Type="xmenu"
 Icon="leaf green"
-Tag="leaf green"
 ---

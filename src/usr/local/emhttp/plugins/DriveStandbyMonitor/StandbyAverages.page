@@ -1,8 +1,7 @@
-Menu="DiskStandbyMonitor:1"
+Menu="DriveStandbyMonitor:"
 Title="Standby Averages"
-Type="xmenu"
-Icon="leaf green"
 Tag="leaf green"
+Markdown="false"
 ---
 <?
 #Pull some default data
@@ -26,38 +25,38 @@ $standby_result = $sqlite->query( $sql_standby );
 
 # Sorter for DRIVE_STATUS
 function alphasort($a, $b){
-	if ($a == $b) return 0;
-	return ($a < $b) ? -1 : 1;
+    if ($a == $b) return 0;
+    return ($a < $b) ? -1 : 1;
 }
 
 while ($data = $live_result->fetchArray(SQLITE3_ASSOC)){
-	$DRIVE_STATUS[ $data["drive"] ]['live'] = $data["count"];
+    $DRIVE_STATUS[ $data["drive"] ]['live'] = $data["count"];
 }
 
 while ($data = $standby_result->fetchArray(SQLITE3_ASSOC)){
-	$DRIVE_STATUS[ $data["drive"] ]['standby'] = $data["count"];
+    $DRIVE_STATUS[ $data["drive"] ]['standby'] = $data["count"];
 }
 
 if( count($DRIVE_STATUS) === 0 ) {
-	print("No data has been collected yet\n");
-	print("Please wait up to 20 minutes for an update to occur.\n");
+    print("No data has been collected yet\n");
+    print("Please wait up to 20 minutes for an update to occur.\n");
 
 }else{
 
-	# Calculate AVG
-	foreach ( $DRIVE_STATUS as $key => $val){
-		$live = isset( $val['live'] ) ? $val['live'] : 0;
-		$standby = isset( $val['standby'] ) ? $val['standby'] : 0;
+    # Calculate AVG
+    foreach ( $DRIVE_STATUS as $key => $val){
+        $live = isset( $val['live'] ) ? $val['live'] : 0;
+        $standby = isset( $val['standby'] ) ? $val['standby'] : 0;
 
-		if ($standby < 1) {
-			$DRIVE_STATUS[$key]['avg'] = 0;
-		}else{
-			$DRIVE_STATUS[$key]['avg'] = round( ( 100 * ( $standby / ($live + $standby) ) ), 2 );
-		}
-	}
+        if ($standby < 1) {
+            $DRIVE_STATUS[$key]['avg'] = 0;
+        }else{
+            $DRIVE_STATUS[$key]['avg'] = round( ( 100 * ( $standby / ($live + $standby) ) ), 2 );
+        }
+    }
 
-	# Sort the list
-	uksort($DRIVE_STATUS,"alphasort");
+    # Sort the list
+    uksort($DRIVE_STATUS,"alphasort");
 
 }
 ?>
@@ -97,50 +96,50 @@ if( count($DRIVE_STATUS) === 0 ) {
 </style>
 
 <div class="DSM-wrapper">
-	<div class="DSM-container">
+    <div class="DSM-container">
         <? foreach ( $DRIVE_STATUS as $key => $val) { ?>
             <div class="DSM-drive" title="This drive has been asleep for <? print($val['avg']); ?>% of the monitored time.">
-				<div class="header">
-					<div class="image">
-						<i class="fa fa-hdd-o big white-text"></i>
-					</div>
-				</div>
-				<div class="body">
-					<div class="name">
-						<? print($key); ?>
-					</div>
-					<div class="data">
-						<? print($val['avg']); ?>%
-					</div>
-				</div>
-			</div>
-		<? } ?>
-	</div>
-	<div class="DSM-container">
-		<div class="DSM-reset-db">
-			<input type="button" id="DSM-reset-db" value="Reset DB" />
-		</div>
-	</div>
+                <div class="header">
+                    <div class="image">
+                        <i class="fa fa-hdd-o big white-text"></i>
+                    </div>
+                </div>
+                <div class="body">
+                    <div class="name">
+                        <? print($key); ?>
+                    </div>
+                    <div class="data">
+                        <? print($val['avg']); ?>%
+                    </div>
+                </div>
+            </div>
+        <? } ?>
+    </div>
+    <div class="DSM-container">
+        <div class="DSM-reset-db">
+            <input type="button" id="DSM-reset-db" value="Reset DB" />
+        </div>
+    </div>
 </div>
 <script type="text/javascript">
 
 async function resetDB(){
-	const response = await fetch("/plugins/<?=$script?>/reset_db.php", { "reset" : 1 } );
-	const json = await response.json();
-	window.location.reload(true);
-	// Do some error checking later
+    const response = await fetch("/plugins/<?=$script?>/reset_db.php", { "reset" : 1 } );
+    const json = await response.json();
+    window.location.reload(true);
+    // Do some error checking later
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
-	document.querySelector("#DSM-reset-db").addEventListener("click", () => {
-		
-		const confirmation = confirm("Are you sure you want to delete all previously logged data?\nThis cannot be undone.");
-		
-		if ( confirmation ) {
-			resetDB();
-		}
-		
-	});
+    document.querySelector("#DSM-reset-db").addEventListener("click", () => {
+        
+        const confirmation = confirm("Are you sure you want to delete all previously logged data?\nThis cannot be undone.");
+        
+        if ( confirmation ) {
+            resetDB();
+        }
+        
+    });
 });
 
 </script>
