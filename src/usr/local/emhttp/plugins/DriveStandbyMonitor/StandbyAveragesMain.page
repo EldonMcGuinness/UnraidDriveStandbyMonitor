@@ -70,49 +70,55 @@ if( count($DRIVE_STATUS) === 0 ) {
 
 }
 ?>
+
+<script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <style type="text/css">
 
 </style>
 
-<table class="disk_status wide">
-    <thead>
-        <tr style="cursor: help;">
-            <td title="">Device</td>
-            <td></td>
-            <td title="" style="text-align:center;">Standby</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </thead>
-    <tbody>
-    <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
-        <tr>
-            <td>
-                <span class="view"></span>
-                <span class="info"></span>
-                <i class="icon-disk icon"></i>
-                <? print($key); ?>
-            </td>
-            <td></td>
-            <td style="text-align:center;">
-                <? print($val['avg'] . '%'); ?>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    <? endforeach; ?>
-    </tbody>
-</table>
+<div class="show-standby">
+    <table class="disk_status wide">
+        <thead>
+            <tr style="cursor: help;">
+                <td title="">Device</td>
+                <td></td>
+                <td title="" style="text-align:center;">Standby</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+        <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
+            <tr>
+                <td>
+                    <span class="view"></span>
+                    <span class="info"></span>
+                    <i class="icon-disk icon"></i>
+                    <? print($key); ?>
+                </td>
+                <td></td>
+                <td style="text-align:center;">
+                    <? print($val['avg'] . '%'); ?>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        <? endforeach; ?>
+        </tbody>
+    </table>
+</div>
 
 <script type="text/javascript">
 function get_tab_title_by_name(name) {
@@ -183,6 +189,34 @@ function addButton(Button, Name, autoHide = true, Append = true) {
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
-    addButtonTab('<a style="cursor:pointer" class="tooltip" title="More Info" href="/Tools/DriveStandbyMonitor"><i class="fa fa-info-circle fa-switch"></i></a>', 'Standby Averages');
+    addButtonTab(
+	'<a style="cursor:pointer" class="tooltip" title="More Info" href="/Tools/DriveStandbyMonitor"><i class="fa fa-info-circle fa-switch"></i></a>',
+	'Standby Averages'
+    );
+    addButtonTab(
+        '<a style="cursor:pointer" class="tooltip" title="Show Devices" ><input type="checkbox" class="standby-switch"></a>',
+        'Standby Averages'
+    );
+
+
+    $('.standby-switch').switchButton(
+        { 
+            labels_placement: "left",
+            on_label: "Show",
+            off_label: "Show",
+            checked: $.cookie('standby-view') != 'false'
+        }
+    );
+
+    $('.standby-switch').change( () => {
+        $('.show-standby').slideToggle('slow');
+        $.cookie('standby-view', $('.standby-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+    });
+
+    /* Update the show-standby status. */
+    if ($.cookie('standby-view') == 'false') {
+        $('.show-standby').slideToggle('slow');
+    }
+
 });
 </script>
