@@ -93,6 +93,11 @@ if( count($DRIVE_STATUS) === 0 ) {
 .DSM-drive .body .name{
     margin-right: 10px;
 }
+
+.DSM-reset-db {
+    width: 150px;
+    text-align: center;
+}
 </style>
 
 <div class="DSM-wrapper">

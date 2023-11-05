@@ -1,0 +1,105 @@
+Menu="Main:4"
+Title="Standby Averages"
+Tag="leaf green"
+Markdown="false"
+---
+<?
+#Pull some default data
+libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$script = "DriveStandbyMonitor";
+$defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
+$DB_LOCATION = $defaults["DB_LOCATION"];
+
+
+$DB_FILE = "${DB_LOCATION}/monitor.db";
+$DRIVE_STATUS = array();
+
+$sql_standby = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 0 group by 'standby'.'drive';";
+$sql_live = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 1 group by 'standby'.'drive';";
+
+# Get the DB info and data on the drives
+$sqlite = new SQLite3( $DB_FILE );
+$live_result = $sqlite->query( $sql_live );
+$standby_result = $sqlite->query( $sql_standby );
+
+# Sorter for DRIVE_STATUS
+function alphasort($a, $b){
+    if ($a == $b) return 0;
+    return ($a < $b) ? -1 : 1;
+}
+
+while ($data = $live_result->fetchArray(SQLITE3_ASSOC)){
+    $DRIVE_STATUS[ $data["drive"] ]['live'] = $data["count"];
+}
+
+while ($data = $standby_result->fetchArray(SQLITE3_ASSOC)){
+    $DRIVE_STATUS[ $data["drive"] ]['standby'] = $data["count"];
+}
+
+if( count($DRIVE_STATUS) === 0 ) {
+    print("No data has been collected yet\n");
+    print("Please wait up to 20 minutes for an update to occur.\n");
+
+}else{
+
+    # Calculate AVG
+    foreach ( $DRIVE_STATUS as $key => $val){
+        $live = isset( $val['live'] ) ? $val['live'] : 0;
+        $standby = isset( $val['standby'] ) ? $val['standby'] : 0;
+
+        if ($standby < 1) {
+            $DRIVE_STATUS[$key]['avg'] = 0;
+        }else{
+            $DRIVE_STATUS[$key]['avg'] = round( ( 100 * ( $standby / ($live + $standby) ) ), 2 );
+        }
+    }
+
+    # Sort the list
+    uksort($DRIVE_STATUS,"alphasort");
+
+}
+?>
+<style type="text/css">
+
+</style>
+
+<table class="disk_status wide">
+    <thead>
+        <tr style="cursor: help;">
+            <td title="">Device</td>
+            <td></td>
+            <td title="" style="text-align:center;">Standby</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+    <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
+        <tr>
+            <td>
+                <span class="view"></span>
+                <span class="info"></span>
+                <i class="icon-disk icon"></i>
+                <? print($key); ?>
+            </td>
+            <td></td>
+            <td style="text-align:center;">
+                <? print($val['avg'] . '%'); ?>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    <? endforeach; ?>
+    </tbody>
+</table>
