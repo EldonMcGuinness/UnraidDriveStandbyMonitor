@@ -47,12 +47,7 @@ while ($data = $standby_result->fetchArray(SQLITE3_ASSOC)){
     $DRIVE_STATUS[ $data["drive"] ]['standby'] = $data["count"];
 }
 
-if( count($DRIVE_STATUS) === 0 ) {
-    print("No data has been collected yet\n");
-    print("Please wait up to 20 minutes for an update to occur.\n");
-
-}else{
-
+if( count($DRIVE_STATUS) !== 0 ) {
     # Calculate AVG
     foreach ( $DRIVE_STATUS as $key => $val){
         $live = isset( $val['live'] ) ? $val['live'] : 0;
@@ -106,9 +101,8 @@ if( count($DRIVE_STATUS) === 0 ) {
 
 <div class="show-standby">
     <table class="disk_status wide">
-    <?if( count($DRIVE_STATUS) !== 0 ) {?>
         <thead>
-            <tr style="cursor: help;">
+            <tr>
                 <td title="">Device</td>
                 <td></td>
                 <td title="" style="text-align:center;">Standby</td>
@@ -121,8 +115,15 @@ if( count($DRIVE_STATUS) === 0 ) {
                 <td></td>
             </tr>
         </thead>
-    <?}?>
         <tbody>
+        <?if( count($DRIVE_STATUS) === 0 ) {?>
+            <tr>
+                <td>
+                    No data has been collected yet<br/>
+                    Please wait up to 20 minutes for an update to occur.
+                </td>
+            </tr>
+        <?} else {?>
         <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
             <tr standby-drive="<?=$key?>" class="standby-drive <? echo ($_COOKIE["standby-drive-".$key] == 'true') ? "hidden" : ""; ?>">
                 <td>
@@ -144,6 +145,7 @@ if( count($DRIVE_STATUS) === 0 ) {
                 <td></td>
             </tr>
         <? endforeach; ?>
+        <?}?>
         </tbody>
     </table>
 </div>
