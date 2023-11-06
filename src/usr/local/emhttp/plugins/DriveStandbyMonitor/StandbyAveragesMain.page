@@ -106,6 +106,7 @@ if( count($DRIVE_STATUS) === 0 ) {
 
 <div class="show-standby">
     <table class="disk_status wide">
+    <?if( count($DRIVE_STATUS) !== 0 ) {?>
         <thead>
             <tr style="cursor: help;">
                 <td title="">Device</td>
@@ -120,6 +121,7 @@ if( count($DRIVE_STATUS) === 0 ) {
                 <td></td>
             </tr>
         </thead>
+    <?}?>
         <tbody>
         <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
             <tr standby-drive="<?=$key?>" class="standby-drive <? echo ($_COOKIE["standby-drive-".$key] == 'true') ? "hidden" : ""; ?>">
