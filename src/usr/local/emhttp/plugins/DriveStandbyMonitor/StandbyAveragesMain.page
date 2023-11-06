@@ -76,6 +76,32 @@ if( count($DRIVE_STATUS) === 0 ) {
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <style type="text/css">
 
+.show-standby .hidden {
+    display:none;
+}
+
+.show-standby .fa-eye {
+    display:none;
+}
+
+.show-standby.edit-standby .hidden {
+    display:table-row;
+}
+
+.show-standby.edit-standby .fa-eye {
+    display:inline;
+    color:green;
+}
+
+.show-standby.edit-standby .hidden .fa-eye {
+    color:grey;
+}
+
+.show-standby table tbody tr,
+.show-standby table tbody tr:nth-child(even) {
+    background-color:inherit;
+}
+
 </style>
 
 <div class="show-standby">
@@ -96,12 +122,12 @@ if( count($DRIVE_STATUS) === 0 ) {
         </thead>
         <tbody>
         <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
-            <tr>
+            <tr standby-drive="<?=$key?>" class="standby-drive <? echo ($_COOKIE["standby-drive-".$key] == 'true') ? "hidden" : ""; ?>">
                 <td>
-                    <span class="view"></span>
+                    <span class="view"><i class="fa fa-eye"></i></span>
                     <span class="info"></span>
                     <i class="icon-disk icon"></i>
-                    <? print($key); ?>
+                    <?=$key?>
                 </td>
                 <td></td>
                 <td style="text-align:center;">
@@ -197,6 +223,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
         '<a style="cursor:pointer" class="tooltip" title="Show Devices" ><input type="checkbox" class="standby-switch"></a>',
         'Standby Averages'
     );
+    addButtonTab(
+        '<a style="cursor:pointer" class="tooltip" title="Edit Devices" ><input type="checkbox" class="standby-editor-switch"></a>',
+        'Standby Averages'
+    );
 
 
     $('.standby-switch').switchButton(
@@ -204,17 +234,43 @@ document.addEventListener( 'DOMContentLoaded', () => {
             labels_placement: "left",
             on_label: "Show",
             off_label: "Show",
-            checked: $.cookie('standby-view') != 'false'
+            checked: $.cookie('standby-switch') != 'false'
         }
     );
 
-    $('.standby-switch').change( () => {
+    $('.standby-editor-switch').switchButton(
+        { 
+            labels_placement: "left",
+            on_label: "Edit",
+            off_label: "Edit",
+            checked: false
+        }
+    );
+
+    $('.standby-switch').change( function () {
         $('.show-standby').slideToggle('slow');
-        $.cookie('standby-view', $('.standby-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+        $.cookie('standby-switch', $('.standby-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+    });
+
+    $('.standby-editor-switch').change( function () {
+        $(".show-standby").toggleClass("edit-standby")
+    });
+
+
+    $('.standby-drive').on("click", function () {
+
+        if ( $(".show-standby").hasClass("edit-standby") ){
+            let drive = $(this).attr("standby-drive");
+            let hidden = $(this).hasClass("hidden");
+
+            $.cookie('standby-drive-' + drive, !hidden, { expires: 3650, path:'/' })
+            $(this).toggleClass("hidden");
+        }
+
     });
 
     /* Update the show-standby status. */
-    if ($.cookie('standby-view') == 'false') {
+    if ($.cookie('standby-switch') == 'false') {
         $('.show-standby').slideToggle('slow');
     }
 
