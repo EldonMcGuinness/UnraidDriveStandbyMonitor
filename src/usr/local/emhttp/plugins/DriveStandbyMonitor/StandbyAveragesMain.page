@@ -219,15 +219,15 @@ function addButton(Button, Name, autoHide = true, Append = true) {
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
-    addButtonTab(
+    addButton(
 	'<a style="cursor:pointer" class="tooltip" title="More Info" href="/Tools/DriveStandbyMonitor"><i class="fa fa-info-circle fa-switch"></i></a>',
 	'Standby Averages'
     );
-    addButtonTab(
+    addButton(
         '<a style="cursor:pointer" class="tooltip" title="Show Devices" ><input type="checkbox" class="standby-switch"></a>',
         'Standby Averages'
     );
-    addButtonTab(
+    addButton(
         '<a style="cursor:pointer" class="tooltip" title="Edit Devices" ><input type="checkbox" class="standby-editor-switch"></a>',
         'Standby Averages'
     );

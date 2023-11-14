@@ -3,14 +3,14 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.06-005">
+<!ENTITY version        "2023.11.14-001">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/issues">
-<!ENTITY md5            "1b494cc736e3c7807ff75484c71a90cd">
+<!ENTITY md5            "2bf0adae7b46eff903c76f6af5f9874d">
 ]>
 
 <PLUGIN  name="&name;"
