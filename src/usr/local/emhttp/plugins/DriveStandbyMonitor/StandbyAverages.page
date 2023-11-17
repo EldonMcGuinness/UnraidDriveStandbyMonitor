@@ -18,6 +18,64 @@ $DRIVE_STATUS = array();
 $sql_standby = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 0 group by 'standby'.'drive';";
 $sql_live = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 1 group by 'standby'.'drive';";
 
+class DriveIDs {
+
+    private $drives = [];
+
+    public function __construct( $drives = [] ){
+        
+        if ( gettype( $drives ) == 'array' ) {
+            
+            $this->drives = $this->parseDrives($drives);
+        }
+
+    }
+
+    private function parseDrives( $drives = [] ){
+
+        $parsedDrives = [];
+
+        foreach ( $drives as $key => $drive ){
+
+            if ( $key == 'flash' ) continue;
+
+            $parsedDrives[ $drive['id'] ] = [
+                'name' => $this->cleanName( $drive['name'] ),
+                'device' => $drive['device']
+            ];
+
+        }
+
+        return $parsedDrives;
+    }
+
+    private function cleanName( $name ) {
+
+        if ( strstr($name, 'disk')  !== false ){
+            return rtrim( "Disk ".substr($name, 4) );
+
+        }elseif ( strstr($name, 'cache') !== false ){
+            return rtrim( "Cache ".substr($name, 5) );
+
+        }elseif ( strstr($name, 'parity')  !== false ){
+            return rtrim( "Parity ".substr($name, 6) );
+
+        }
+
+    }
+
+    public function getDeviceName( $serial = '' ){
+        return $this->drives[ $serial ]['name'];
+
+    }
+
+    public function getDevice( $serial = '' ){
+        return $this->drives[ $serial ]['device'];
+    }
+}
+
+$driveIDs = new DriveIDs( $disks );
+
 # Get the DB info and data on the drives
 $sqlite = new SQLite3( $DB_FILE );
 $live_result = $sqlite->query( $sql_live );
@@ -25,8 +83,8 @@ $standby_result = $sqlite->query( $sql_standby );
 
 # Sorter for DRIVE_STATUS
 function alphasort($a, $b){
-    if ($a == $b) return 0;
-    return ($a < $b) ? -1 : 1;
+    if ($a['name'] == $b['name']) return 0;
+    return ($a['name'] < $b['name']) ? -1 : 1;
 }
 
 while ($data = $live_result->fetchArray(SQLITE3_ASSOC)){
@@ -43,10 +101,12 @@ if( count($DRIVE_STATUS) === 0 ) {
 
 }else{
 
-    # Calculate AVG
+    # Calculate AVG & Set Name
     foreach ( $DRIVE_STATUS as $key => $val){
         $live = isset( $val['live'] ) ? $val['live'] : 0;
         $standby = isset( $val['standby'] ) ? $val['standby'] : 0;
+        
+        $DRIVE_STATUS[$key]['name'] = $driveIDs->getDeviceName( $key );
 
         if ($standby < 1) {
             $DRIVE_STATUS[$key]['avg'] = 0;
@@ -56,7 +116,7 @@ if( count($DRIVE_STATUS) === 0 ) {
     }
 
     # Sort the list
-    uksort($DRIVE_STATUS,"alphasort");
+    usort($DRIVE_STATUS,"alphasort");
 
 }
 ?>
@@ -111,7 +171,7 @@ if( count($DRIVE_STATUS) === 0 ) {
                 </div>
                 <div class="body">
                     <div class="name">
-                        <? print($key); ?>
+                        <?=$val['name']; ?>
                     </div>
                     <div class="data">
                         <? print($val['avg']); ?>%
