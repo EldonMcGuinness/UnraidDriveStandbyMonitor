@@ -2,5 +2,5 @@ Menu="DiskUtilities"
 Title="Drive Standby Monitor"
 Tabs="false"
 Type="xmenu"
-Icon="leaf green"
+Icon="logo.png"
 ---
