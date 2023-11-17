@@ -3,27 +3,31 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.14-001">
+<!ENTITY version        "2023.11.18-001">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
-<!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/DriveStandbyMonitor.plg">
+<!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/issues">
-<!ENTITY md5            "2bf0adae7b46eff903c76f6af5f9874d">
+<!ENTITY md5            "a16398af99332cf88c528e0f2e8846a2">
+<!ENTITY branch         "master">
 ]>
 
 <PLUGIN  name="&name;"
          author="&author;"
          version="&version;"
-         pluginURL="&pluginURL;"
-         icon="big green-text fa fa-leaf"
+         pluginURL="&pluginURL;/&branch;/&name;.plg"
          launch="&launch;">
 
 
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Added new logos
+
+###2023.11.14-001
 
 - Added ability to edit shown drives on main page
 
@@ -93,7 +97,7 @@ Install the cron via this script as one can not call update_cron from the script
 
 <!-- Package Install -->
 <FILE Name="&source;.&version;.txz" Run="upgradepkg --install-new --reinstall">
-    <URL>https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw/master/&name;.&version;.txz</URL>
+    <URL>&pluginURL;/&branch;/&name;.&version;.txz</URL>
 </FILE>
 
 <!-- default.cfg -->
