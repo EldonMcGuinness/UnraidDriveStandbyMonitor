@@ -18,6 +18,8 @@ $DRIVE_STATUS = array();
 $sql_data = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
 $sql_drives = "SELECT 'standby'.'drive' from 'standby' group by 'standby'.'drive' order by 'standby'.'drive' ASC;";
 
+$driveIDs = new DriveIDs( $disks );
+
 # Get the DB info and data on the drives
 $sqlite = new SQLite3( $DB_FILE );
 $data_result = $sqlite->query( $sql_data );
@@ -40,8 +42,7 @@ $drives_result = $sqlite->query( $sql_drives );
         <select id="show-only">
             <option value="all">All</option>
         <? while ($drives = $drives_result->fetchArray()) { ?>
-            <option value="<?=$drives['drive']?>"><?=$drives['drive']?></option>
-        <? } ?>
+            <option value="<?=$drives['drive']?>"><?=$drives['drive']." (".$driveIDs->getDeviceName($drives['drive']).")"?></option>        <? } ?>
         </select>
     </div>
 </div>
@@ -67,7 +68,7 @@ $drives_result = $sqlite->query( $sql_drives );
                 <span class="view"></span>
                 <span class="info"></span>
                 <i class="icon-disk icon"></i>
-                <? print($data['drive']); ?>
+                <?=$data['drive']." (".$driveIDs->getDeviceName($data['drive']).")"?>
             </td>
             <td></td>
             <td style="text-align:center;">

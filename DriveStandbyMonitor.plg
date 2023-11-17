@@ -3,15 +3,15 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.18-001">
+<!ENTITY version        "2023.11.19-004">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/issues">
-<!ENTITY md5            "a16398af99332cf88c528e0f2e8846a2">
-<!ENTITY branch         "master">
+<!ENTITY md5            "f4eee5f697c83ae72abf7ee2d48d04a2">
+<!ENTITY branch         "drive_names">
 ]>
 
 <PLUGIN  name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Added Drive Names to the listing and indexing is now done by serial + model. This build will reset your database (delete all the standby logging data) as the indexing has changed.
+
+###2023.11.18-001
 
 - Added new logos
 
@@ -64,7 +68,7 @@
   <INLINE>
 <![CDATA[
 # Generated for Drive Standby Monitor plugin
-*/15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor.sh
+*/15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor.sh > /dev/null 2>&1
 ]]>
   </INLINE>
 </FILE>
@@ -86,9 +90,22 @@ Install the cron via this script as one can not call update_cron from the script
 <!-- Pre-Install -->
 <FILE Run="/bin/bash">
   <INLINE>
+    CURRENT_VERSION=0
+
     # Remove old 'source' files
     rm -f $(ls &boot;/&name;*.txz 2&gt;/dev/null | grep -v '&version;')
     rm -fR &emhttp;
+
+    if [ -e &boot;/.version ]; then
+      CURRENT_VERSION=$(cat &boot;/.version)
+      echo Current Version: $CURRENT_VERSION
+    fi
+
+    # Do this is the current version is older than a target version
+    # Older data was not capturing serial number+model
+    if [ $CURRENT_VERSION -lt 20231119001 ]; then
+      sqlite3 "&boot;/monitor.db" "DELETE FROM standby;" 2>/dev/null
+    fi
 
     sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );"
     
@@ -121,6 +138,9 @@ DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor"
     mkdir -p /tmp/&name;
     
     at -M -f /tmp/&name;_cron_installer now + 1 minute  2>/dev/null
+
+    # Update the installed version number
+    echo &version; | sed 's/[\.\-]//g' > &boot;/.version
 
     echo '###############################################'
     echo 'Install Complete'
