@@ -8,7 +8,7 @@ assignees: EldonMcGuinness
 ---
 
 # Results of the following command:
-`curl -s https://gist.githubusercontent.com/EldonMcGuinness/ea36fd56660860f851395aab42cfbbc1/raw/128c25be1645232000328142a8a27c9eff343e08/diskstandbytest.sh | bash`
+`curl -s https://gist.githubusercontent.com/EldonMcGuinness/ea36fd56660860f851395aab42cfbbc1/raw/39a92fa5b63b71c4d155ba72a2ba3e0b2bb71a83/diskstandbytest.sh | bash`
 
 # Drive brand and type/model, as well as how it is connected
 - WD RED Plus NAS - Directly connected to Motherboard via SATA port
