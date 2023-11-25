@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.24-003">
+<!ENTITY version        "2023.11.24-005">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
@@ -67,6 +67,37 @@
 
 </CHANGES>
 
+<!-- Pre-Install -->
+<FILE Run="/bin/bash">
+  <INLINE>
+    CURRENT_VERSION=0
+
+    # Remove old 'source' files
+    rm -f $(ls &boot;/&name;*.txz 2>/dev/null)
+    rm -fR &emhttp;
+
+    # Remove old cron and remove from cron.d
+    rm "&boot;/monitor.cron"
+    update_cron
+
+    if [ -e &boot;/.version ]; then
+      CURRENT_VERSION=$(cat &boot;/.version)
+    fi
+
+    # Do this is the current version is older than a target version
+    # Older data was not capturing serial number+model
+    if [ $CURRENT_VERSION -lt 20231119001 ] &amp;&amp; [ -e "&boot;/monitor.db" ]; then
+      rm "&boot;/monitor.db";
+    fi
+   
+  </INLINE>
+</FILE>
+
+<!-- Package Install -->
+<FILE Name="&source;.&version;.txz" Run="upgradepkg --install-new --reinstall">
+    <URL>&pluginURL;/&branch;/&name;.&version;.txz</URL>
+</FILE>
+
 <!-- cron file for monitor.cron -->
 <FILE Name="&boot;/monitor.cron">
   <INLINE>
@@ -89,33 +120,6 @@ Install the cron via this script as one can not call update_cron from the script
     # Remove the background start script.
     rm -f /tmp/&name;_cron_installer > /dev/null 2>&amp;1
   </INLINE>
-</FILE>
-
-<!-- Pre-Install -->
-<FILE Run="/bin/bash">
-  <INLINE>
-    CURRENT_VERSION=0
-
-    # Remove old 'source' files
-    rm -f $(ls &boot;/&name;*.txz 2>/dev/null)
-    rm -fR &emhttp;
-
-    if [ -e &boot;/.version ]; then
-      CURRENT_VERSION=$(cat &boot;/.version)
-    fi
-
-    # Do this is the current version is older than a target version
-    # Older data was not capturing serial number+model
-    if [ $CURRENT_VERSION -lt 20231119001 ] &amp;&amp; [ -e "&boot;/monitor.db" ]; then
-      rm "&boot;/monitor.db";
-    fi
-   
-  </INLINE>
-</FILE>
-
-<!-- Package Install -->
-<FILE Name="&source;.&version;.txz" Run="upgradepkg --install-new --reinstall">
-    <URL>&pluginURL;/&branch;/&name;.&version;.txz</URL>
 </FILE>
 
 <!-- default.cfg -->
