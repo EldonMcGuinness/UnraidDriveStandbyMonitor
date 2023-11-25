@@ -3,14 +3,14 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.19-004">
+<!ENTITY version        "2023.11.24-002">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
-<!ENTITY supportURL     "https://forums.unraid.net/topic/147982-drive-standby-monitor-plugin-support/">
-<!ENTITY md5            "f4eee5f697c83ae72abf7ee2d48d04a2">
+<!ENTITY supportURL     "{https://forums.unraid.net/topic/147982-drive-standby-monitor-plugin-support/}">
+<!ENTITY md5            "d095bee65a05450fb764344bf2665cc2">
 <!ENTITY branch         "master">
 ]>
 
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Moved to using a new monitoring backend
+
+###2023.11.19-004
 
 - Added Drive Names to the listing and indexing is now done by serial + model. This build will reset your database (delete all the standby logging data) as the indexing has changed.
 
@@ -68,7 +72,7 @@
   <INLINE>
 <![CDATA[
 # Generated for Drive Standby Monitor plugin
-*/15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor.sh > /dev/null 2>&1
+*/15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor > /dev/null 2>&1
 ]]>
   </INLINE>
 </FILE>
@@ -83,7 +87,7 @@ Install the cron via this script as one can not call update_cron from the script
     update_cron
 
     # Remove the background start script.
-    rm -f /tmp/&name;_cron_installer 2>/dev/null
+    rm -f /tmp/&name;_cron_installer > /dev/null 2>&amp;1
   </INLINE>
 </FILE>
 
@@ -93,22 +97,19 @@ Install the cron via this script as one can not call update_cron from the script
     CURRENT_VERSION=0
 
     # Remove old 'source' files
-    rm -f $(ls &boot;/&name;*.txz 2&gt;/dev/null | grep -v '&version;')
+    rm -f $(ls &boot;/&name;*.txz 2>/dev/null)
     rm -fR &emhttp;
 
     if [ -e &boot;/.version ]; then
       CURRENT_VERSION=$(cat &boot;/.version)
-      echo Current Version: $CURRENT_VERSION
     fi
 
     # Do this is the current version is older than a target version
     # Older data was not capturing serial number+model
-    if [ $CURRENT_VERSION -lt 20231119001 ]; then
-      sqlite3 "&boot;/monitor.db" "DELETE FROM standby;" 2>/dev/null
+    if [ $CURRENT_VERSION -lt 20231119001 ] &amp;&amp; [ -e "&boot;/monitor.db" ]; then
+      rm "&boot;/monitor.db";
     fi
-
-    sqlite3 "&boot;/monitor.db" "CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );"
-    
+   
   </INLINE>
 </FILE>
 
@@ -121,7 +122,7 @@ Install the cron via this script as one can not call update_cron from the script
 <FILE Name="&emhttp;/default.cfg">
   <INLINE>
 <![CDATA[
-DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor"
+DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor/monitor.db"
 ]]>
   </INLINE>
 </FILE>
@@ -133,11 +134,11 @@ DB_LOCATION="/boot/config/plugins/DriveStandbyMonitor"
     chmod -R 755 &emhttp;
     chown -R root &emhttp;
     chgrp -R root &emhttp;
-    chmod +x &emhttp;/monitor.sh
+    chmod +x &emhttp;/monitor
 
     mkdir -p /tmp/&name;
     
-    at -M -f /tmp/&name;_cron_installer now + 1 minute  2>/dev/null
+    at -M -f /tmp/&name;_cron_installer now + 1 minute > /dev/null 2>&amp;1
 
     # Update the installed version number
     echo &version; | sed 's/[\.\-]//g' > &boot;/.version

@@ -6,80 +6,16 @@ Markdown="false"
 <?
 #Pull some default data
 libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
+
+$scriptName = "DriveStandbyMonitor";
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
-$script = "DriveStandbyMonitor";
-$defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
-$DB_LOCATION = $defaults["DB_LOCATION"];
+$pluginRoot = "$docroot/plugins/$scriptName";
+include_once( "./plugins/$scriptName/includes/page.php" );
 
-
-$DB_FILE = "${DB_LOCATION}/monitor.db";
 $DRIVE_STATUS = array();
 
-$sql_standby = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 0 group by 'standby'.'drive';";
-$sql_live = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 1 group by 'standby'.'drive';";
-
-class DriveIDs {
-
-    private $drives = [];
-
-    public function __construct( $drives = [] ){
-        
-        if ( gettype( $drives ) == 'array' ) {
-            
-            $this->drives = $this->parseDrives($drives);
-        }
-
-    }
-
-    private function parseDrives( $drives = [] ){
-
-        $parsedDrives = [];
-
-        foreach ( $drives as $key => $drive ){
-
-            if ( $key == 'flash' ) continue;
-
-            $parsedDrives[ $drive['id'] ] = [
-                'name' => $this->cleanName( $drive['name'] ),
-                'device' => $drive['device']
-            ];
-
-        }
-
-        return $parsedDrives;
-    }
-
-    private function cleanName( $name ) {
-
-        if ( strstr($name, 'disk')  !== false ){
-            return rtrim( "Disk ".substr($name, 4) );
-
-        }elseif ( strstr($name, 'cache') !== false ){
-            return rtrim( "Cache ".substr($name, 5) );
-
-        }elseif ( strstr($name, 'parity')  !== false ){
-            return rtrim( "Parity ".substr($name, 6) );
-
-        }
-
-    }
-
-    public function getDeviceName( $serial = '' ){
-        return $this->drives[ $serial ]['name'];
-
-    }
-
-    public function getDevice( $serial = '' ){
-        return $this->drives[ $serial ]['device'];
-    }
-}
-
-$driveIDs = new DriveIDs( $disks );
-
-# Get the DB info and data on the drives
-$sqlite = new SQLite3( $DB_FILE );
-$live_result = $sqlite->query( $sql_live );
-$standby_result = $sqlite->query( $sql_standby );
+$DSM = new DisksInfo( $disks );
+$DB = new DSMDB( $DB_FILE );
 
 # Sorter for DRIVE_STATUS
 function alphasort($a, $b){
@@ -87,11 +23,11 @@ function alphasort($a, $b){
     return ($a['name'] < $b['name']) ? -1 : 1;
 }
 
-while ($data = $live_result->fetchArray(SQLITE3_ASSOC)){
+while ( $data = $DB->getStandbyDisks() ){
     $DRIVE_STATUS[ $data["drive"] ]['live'] = $data["count"];
 }
 
-while ($data = $standby_result->fetchArray(SQLITE3_ASSOC)){
+while ( $data = $DB->getLiveDisks() ){
     $DRIVE_STATUS[ $data["drive"] ]['standby'] = $data["count"];
 }
 
@@ -106,7 +42,7 @@ if( count($DRIVE_STATUS) === 0 ) {
         $live = isset( $val['live'] ) ? $val['live'] : 0;
         $standby = isset( $val['standby'] ) ? $val['standby'] : 0;
         
-        $DRIVE_STATUS[$key]['name'] = $driveIDs->getDeviceName( $key );
+        $DRIVE_STATUS[$key]['name'] = $DSM->getDeviceName( $key );
 
         if ($standby < 1) {
             $DRIVE_STATUS[$key]['avg'] = 0;
@@ -189,7 +125,7 @@ if( count($DRIVE_STATUS) === 0 ) {
 <script type="text/javascript">
 
 async function resetDB(){
-    const response = await fetch("/plugins/<?=$script?>/reset_db.php", { "reset" : 1 } );
+    const response = await fetch("/plugins/<?=$scriptName?>/reset_db.php", { "reset" : 1 } );
     const json = await response.json();
     window.location.reload(true);
     // Do some error checking later

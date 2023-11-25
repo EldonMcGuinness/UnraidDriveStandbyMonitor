@@ -6,24 +6,17 @@ Markdown="false"
 <?
 #Pull some default data
 libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
+
+$scriptName = "DriveStandbyMonitor";
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
-$script = "DriveStandbyMonitor";
-$defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
-$DB_LOCATION = $defaults["DB_LOCATION"];
+$pluginRoot = "$docroot/plugins/$scriptName";
+include_once( "./plugins/$scriptName/includes/page.php" );
 
-
-$DB_FILE = "${DB_LOCATION}/monitor.db";
 $DRIVE_STATUS = array();
 
-$sql_data = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
-$sql_drives = "SELECT 'standby'.'drive' from 'standby' group by 'standby'.'drive' order by 'standby'.'drive' ASC;";
+$DSM = new DisksInfo( $disks );
+$DB = new DSMDB( $DB_FILE );
 
-$driveIDs = new DriveIDs( $disks );
-
-# Get the DB info and data on the drives
-$sqlite = new SQLite3( $DB_FILE );
-$data_result = $sqlite->query( $sql_data );
-$drives_result = $sqlite->query( $sql_drives );
 ?>
 
 <style type="text/css">
@@ -41,8 +34,8 @@ $drives_result = $sqlite->query( $sql_drives );
         <span>Show Only:</span>
         <select id="show-only">
             <option value="all">All</option>
-        <? while ($drives = $drives_result->fetchArray()) { ?>
-            <option value="<?=$drives['drive']?>"><?=$drives['drive']." (".$driveIDs->getDeviceName($drives['drive']).")"?></option>        <? } ?>
+        <? while ($drives = $DB->getRawDataDisks()) { ?>
+            <option value="<?=$drives['drive']?>"><?=$drives['drive']." (".$DSM->getDeviceName($drives['drive']).")"?></option>        <? } ?>
         </select>
     </div>
 </div>
@@ -62,13 +55,13 @@ $drives_result = $sqlite->query( $sql_drives );
         </tr>
     </thead>
     <tbody>
-    <? while ($data = $data_result->fetchArray(SQLITE3_ASSOC)) { ?>
+    <? while ($data = $DB->getRawData()) { ?>
         <tr class="standby <?=$data['drive']?>">
             <td>
                 <span class="view"></span>
                 <span class="info"></span>
                 <i class="icon-disk icon"></i>
-                <?=$data['drive']." (".$driveIDs->getDeviceName($data['drive']).")"?>
+                <?=$data['drive']." (".$DSM->getDeviceName($data['drive']).")"?>
             </td>
             <td></td>
             <td style="text-align:center;">
