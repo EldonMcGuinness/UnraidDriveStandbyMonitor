@@ -22,7 +22,6 @@ $disks = @parse_ini_file("$docroot/state/disks.ini", true);
 # Pull in some defaults
 $defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
 
-
 # Used to strip out unused devices and limit the returned data
 class DisksInfo {
 
@@ -30,14 +29,15 @@ class DisksInfo {
     private $date;
     private $disksBySerial = [];
     
+    # Helper function used to clean the disk name up a bit
     private function cleanName($name) {
-        if ( strstr($name, 'disk')  !== false ){
+        if ( stristr($name, 'disk')  !== false ){
             return rtrim( "Disk ".substr($name, 4) );
 
-        }elseif ( strstr($name, 'cache') !== false ){
+        }elseif ( stristr($name, 'cache') !== false ){
             return rtrim( "Cache ".substr($name, 5) );
 
-        }elseif ( strstr($name, 'parity')  !== false ){
+        }elseif ( stristr($name, 'parity')  !== false ){
             return rtrim( "Parity ".substr($name, 6) );
         }else{
             return $name;
@@ -45,6 +45,7 @@ class DisksInfo {
         
     }
 
+  
     public function __construct( $disks = [] ){
         $this->date = time();
 
@@ -68,23 +69,26 @@ class DisksInfo {
                 "date" => time()
             ];
 
-            $this->disksBySerial[ $val["id"] ] = $val;
+            $this->disksBySerial[ $val["id"] ] = &$val;
         }
 
         $this->disks = $disks;
 
     }
 
+    # Getter to return the disks
     public function getDisks() {
         return $this->disks;
         
     }
 
+    # Getter to convert a serial number into the disk name
     public function getDeviceName( $serial = '' ){
         return $this->disksBySerial[ $serial ]['name'];
 
     }
 
+    # Getter to convert a serial number into the device
     public function getDevice( $serial = '' ){
         return $this->disksBySerial[ $serial ]['device'];
     }
@@ -93,6 +97,7 @@ class DisksInfo {
 # Used when working with the DB
 class DSMDB extends SQLite3 {
 
+    # Pointer variables used to hold the current position in the sqlite3 fetchArray functions
     private $getStandbyDisksResults = false;
     private $getLiveDisksResults = false;
     private $getRawDataResults = false;
@@ -104,10 +109,12 @@ class DSMDB extends SQLite3 {
 
     }
 
+    # Helper function to create the table if needed
     private function createTable(){
         $this->exec("CREATE TABLE IF NOT EXISTS 'standby' ( id INTEGER PRIMARY KEY AUTOINCREMENT, drive VARCHAR(32), state INTEGER, date INTEGER );");
     }
 
+    # Get a count of the standby logs for the drives
     public function getStandbyDisks() {
         if ( $this->getStandbyDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 0 group by 'standby'.'drive';";
@@ -124,6 +131,7 @@ class DSMDB extends SQLite3 {
 
     }
 
+    # Get a count of the non-standby logs for the drives
     public function getLiveDisks(){
         if ( $this->getLiveDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 1 group by 'standby'.'drive';";
@@ -140,6 +148,7 @@ class DSMDB extends SQLite3 {
         
     }
 
+    # Get a lists of data entries to use on StandbyData.page
     public function getRawData(){
         if ( $this->getRawDataResults === false ) {
             $sql = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
@@ -155,7 +164,7 @@ class DSMDB extends SQLite3 {
         return $row;
     }
 
-
+    # Get a lists of disks to use on StandbyData.page
     public function getRawDataDisks(){
         if ( $this->getRawDataDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive' from 'standby' group by 'standby'.'drive' order by 'standby'.'drive' ASC;";
@@ -171,8 +180,7 @@ class DSMDB extends SQLite3 {
         return $row;
     }
 
-    
-
+    # Log the current disks' information into the database
     public function logEntries ( $disks = [] ) {
         foreach ( $disks as $disk ){
             $this->exec("INSERT INTO 'standby' ('drive', 'state', 'date') VALUES ('".$disk["id"]."', ".$disk["spundown"].", ".$disk["date"].")");
@@ -180,11 +188,86 @@ class DSMDB extends SQLite3 {
 
     }
 
+    # Reset the database
     public function resetDB () {
         $this->exec("DELETE FROM standby;");
 
     }
     
 }
+
+
+class DSMTools{
+
+    #Sorting helper function, used by DSMTools::driveSort
+    private static function alphasort($a, $b){
+        $a_name = "";
+        $a_id = 0;
+        $b_name = "";
+        $b_id = 0;
+    
+    
+        list($a_name, $a_id) = DSMTools::splitName($a["name"]);
+        list($b_name, $b_id) = DSMTools::splitName($b["name"]);
+    
+        if ( $a_name == "Parity" && $b_name == "Parity" ){
+            if ($a_id == $b_id) return 0;
+            return ($a_id < $b_id) ? -1 : 1;
+    
+        }elseif ( $a_name == "Parity" && ( $b_name == "Disk" || $b_name == "Cache" )){
+            return -1;
+        }elseif ( $a_name == "Disk" && $b_name == "Disk" ){
+            if ($a_id == $b_id) return 0;
+            return ($a_id < $b_id) ? -1 : 1;
+    
+        }elseif ( $a_name == "Disk" && $b_name == "Parity" ){
+            return 1;
+        }elseif ( $a_name == "Disk" && $b_name == "Cache" ){
+            return -1;
+        }elseif ( $a_name == "Cache" && $b_name == "Cache" ){
+            if ($a_id == $b_id) return 0;
+            return ($a_id < $b_id) ? -1 : 1;
+    
+        }elseif ( $a_name == "Cache" && $b_name == "Parity" ){
+            return 1;
+        }elseif ( $a_name == "Cache" && $b_name == "Disk" ){
+            return 1;
+        }
+    
+        if ($a == $b) return 0;
+        return ($a < $b) ? -1 : 1;
+    
+    }
+    
+    # Helper function used to split the disk name into text and number
+    private static function splitName ($name){
+        if ( stristr($name, 'disk')  !== false ){
+            return array(
+                "Disk",
+                (int) rtrim( substr($name, 4))
+            );
+        }elseif ( stristr($name, 'cache') !== false ){
+            return array(
+                "Cache",
+                (int) rtrim( substr($name, 5) )
+            );
+    
+        }elseif ( stristr($name, 'parity')  !== false ){
+            return array(
+                "Parity",
+                (int) rtrim( substr($name, 6) )
+            );
+        }else{
+            return array($name, 0);
+        }
+    }
+  
+    # Used to sort disks into order Parity -> Disks -> Cache
+    public static function diskSort( &$disks ) {
+        uasort($disks, "DSMTools::alphasort");
+    }
+
+}
+
 
 ?>

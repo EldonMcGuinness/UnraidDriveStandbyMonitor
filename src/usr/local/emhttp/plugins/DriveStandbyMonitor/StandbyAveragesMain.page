@@ -4,7 +4,6 @@ Tag="logo-x16.png"
 Markdown="false"
 ---
 <?
-
 #Pull some default data
 libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
 
@@ -13,74 +12,11 @@ $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $pluginRoot = "$docroot/plugins/$scriptName";
 include_once( "./plugins/$scriptName/includes/page.php" );
 
-$DRIVE_STATUS = array();
-
 $DSM = new DisksInfo( $disks );
 $DB = new DSMDB( $DB_FILE );
 
+# Temporary storage for $disk array that is being manipulated
 $DRIVE_STATUS = array();
-
-function cleanName ($name){
-    if ( stristr($name, 'disk')  !== false ){
-        return array(
-            "Disk",
-            (int) rtrim( substr($name, 4))
-        );
-    }elseif ( stristr($name, 'cache') !== false ){
-        return array(
-            "Cache",
-            (int) rtrim( substr($name, 5) )
-        );
-
-    }elseif ( stristr($name, 'parity')  !== false ){
-        return array(
-            "Parity",
-            (int) rtrim( substr($name, 6) )
-        );
-    }else{
-        return array($name, 0);
-    }
-}
-
-
-function alphasort($a, $b){
-    $a_name = "";
-    $a_id = 0;
-    $b_name = "";
-    $b_id = 0;
-
-
-    list($a_name, $a_id) = cleanName($a["name"]);
-    list($b_name, $b_id) = cleanName($b["name"]);
-
-    if ( $a_name == "Parity" && $b_name == "Parity" ){
-        if ($a_id == $b_id) return 0;
-        return ($a_id < $b_id) ? -1 : 1;
-
-    }elseif ( $a_name == "Parity" && ( $b_name == "Disk" || $b_name == "Cache" )){
-        return -1;
-    }elseif ( $a_name == "Disk" && $b_name == "Disk" ){
-        if ($a_id == $b_id) return 0;
-        return ($a_id < $b_id) ? -1 : 1;
-
-    }elseif ( $a_name == "Disk" && $b_name == "Parity" ){
-        return 1;
-    }elseif ( $a_name == "Disk" && $b_name == "Cache" ){
-        return -1;
-    }elseif ( $a_name == "Cache" && $b_name == "Cache" ){
-        if ($a_id == $b_id) return 0;
-        return ($a_id < $b_id) ? -1 : 1;
-
-    }elseif ( $a_name == "Cache" && $b_name == "Parity" ){
-        return 1;
-    }elseif ( $a_name == "Cache" && $b_name == "Disk" ){
-        return 1;
-    }
-
-    if ($a == $b) return 0;
-    return ($a < $b) ? -1 : 1;
-
-}
 
 while ($data = $DB->getLiveDisks()){
     $DRIVE_STATUS[ $data["drive"] ]['live'] = $data["count"];
@@ -91,6 +27,7 @@ while ($data = $DB->getStandbyDisks()){
 }
 
 if( count($DRIVE_STATUS) !== 0 ) {
+
     # Calculate AVG
     foreach ( $DRIVE_STATUS as $key => $val){
         $live = isset( $val['live'] ) ? $val['live'] : 0;
@@ -107,7 +44,7 @@ if( count($DRIVE_STATUS) !== 0 ) {
     }
 
     # Sort the list
-    uasort($DRIVE_STATUS,"alphasort");
+    DSMTools::diskSort($DRIVE_STATUS);
 
 }
 
