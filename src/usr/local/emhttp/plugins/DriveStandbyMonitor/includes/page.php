@@ -64,6 +64,7 @@ class DisksInfo {
                 "name" => $this->cleanName($val["name"]),
                 "device" => $val["device"],
                 "transport" => $val["transport"],
+                "type" => $val["type"],
                 "rotational" => $val["rotational"],
                 "spundown" => ($val["spundown"]) ? 0 : 1, #TODO Look into removing this negation
                 "date" => time()
@@ -91,6 +92,11 @@ class DisksInfo {
     # Getter to convert a serial number into the device
     public function getDevice( $serial = '' ){
         return $this->disksBySerial[ $serial ]['device'];
+    }
+
+    # Getter to convert a serial number into the device type
+    public function getDeviceType( $serial = '' ){
+        return $this->disksBySerial[ $serial ]['type'];
     }
 }
 
@@ -209,20 +215,23 @@ class DSMTools{
     
         list($a_name, $a_id) = DSMTools::splitName($a["name"]);
         list($b_name, $b_id) = DSMTools::splitName($b["name"]);
+
+        $a_name = $a["type"];
+        $b_name = $b["type"];
     
         if ( $a_name == "Parity" && $b_name == "Parity" ){
             if ($a_id == $b_id) return 0;
             return ($a_id < $b_id) ? -1 : 1;
     
-        }elseif ( $a_name == "Parity" && ( $b_name == "Disk" || $b_name == "Cache" )){
+        }elseif ( $a_name == "Parity" && ( $b_name == "Data" || $b_name == "Cache" )){
             return -1;
-        }elseif ( $a_name == "Disk" && $b_name == "Disk" ){
+        }elseif ( $a_name == "Data" && $b_name == "Data" ){
             if ($a_id == $b_id) return 0;
             return ($a_id < $b_id) ? -1 : 1;
     
-        }elseif ( $a_name == "Disk" && $b_name == "Parity" ){
+        }elseif ( $a_name == "Data" && $b_name == "Parity" ){
             return 1;
-        }elseif ( $a_name == "Disk" && $b_name == "Cache" ){
+        }elseif ( $a_name == "Data" && $b_name == "Cache" ){
             return -1;
         }elseif ( $a_name == "Cache" && $b_name == "Cache" ){
             if ($a_id == $b_id) return 0;
@@ -230,7 +239,7 @@ class DSMTools{
     
         }elseif ( $a_name == "Cache" && $b_name == "Parity" ){
             return 1;
-        }elseif ( $a_name == "Cache" && $b_name == "Disk" ){
+        }elseif ( $a_name == "Cache" && $b_name == "Data" ){
             return 1;
         }
     
