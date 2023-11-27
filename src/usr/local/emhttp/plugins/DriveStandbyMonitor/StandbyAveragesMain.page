@@ -138,37 +138,45 @@ if( count($DRIVE_STATUS) !== 0 ) {
 </div>
 
 <script type="text/javascript">
-function get_tab_title_by_name(name) {
-    var tab = $("input[name$=tabs] + label").filter(function(){return $(this).text() === name;}).prev();
-<?if ($new_model):?>
-    var title = $("div.title > span.left").filter(function(){return $(this).text() === name;}).parent();
-<?else:?>
-    var title = $("div#title > span.left").filter(function(){return $(this).text() === name;}).parent();
-<?endif;?>
-    if (tab.length) {
-        rc = tab;
-    } else if (title.length) {
-        rc = title;
-    } else {
-        rc = $(document);
-    }
 
-    return rc;
+function getTabTitleByName( name ){
+    for ( let obj of document.querySelectorAll("div.tabs div.title > span.left") ){
+        if (obj.innerText === "Standby Averages") return obj.parentNode;
+    }
 }
 
+// TODO: Rewrite this to not need jquery
 function addButton(Button, Name, autoHide = true, Append = true) {
-    var Target = get_tab_title_by_name(Name);
-    var elementId = 'event-' + new Date().getTime() * Math.floor(Math.random()*100000);
-    var element = $("<span id='"+elementId+"' class='status'>"+Button+"</span>");
 
+    console.warn("Button Added "+Name);
+    let Target = getTabTitleByName(Name);
+    
+    //Build the wrapper element
+    let element = document.createElement("span");
+    element.style.marginRight = "2px";
+    element.style.marginTop = "1px";
+    element.id = "event-" + new Date().getTime() * Math.floor(Math.random()*100000);
+    element.classList.add("status");
+    element.append(Button);
+
+     //$("<span id='"+elementId+"' class='status'>"+Button+"</span>");
+
+
+     console.warn(element.querySelectorAll("input[type='button']"));
     rc = true;
-    if (element.find("input[type='button']").length) {
+    if ( (element.querySelectorAll("input[type='button']")).length > 0) {
         element.addClass("vhshift");
-        element.find("input[type='button']").prop("style","padding-top: 5px; padding-bottom: 5px; margin-top:-3px; margin-bottom:0;");
+        
+        let input = element.querySelectorAll("input[type='button']")[0];
+        
+        input.style.paddingTop = "5px";
+        input.style.paddingBottom = "5px";
+        input.style.marginTop = "-3px";
+        input.style.marginBottom = "0px";
     }
 
-    if (Target.prop('nodeName') === "DIV") {
-        element.addClass("vhshift");
+    if (Target.nodeName === "DIV") {
+        element.classList.add("vhshift");
         if (Append) {
             Target.append(element);
         } else {
@@ -206,19 +214,70 @@ function addButton(Button, Name, autoHide = true, Append = true) {
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
-    addButton(
-	'<a style="cursor:pointer" class="tooltip" title="More Info" href="/Tools/DriveStandbyMonitor"><i class="fa fa-info-circle fa-switch"></i></a>',
-	'Standby Averages'
-    );
-    addButton(
-        '<a style="cursor:pointer" class="tooltip" title="Show Devices" ><input type="checkbox" class="standby-switch"></a>',
-        'Standby Averages'
-    );
-    addButton(
-        '<a style="cursor:pointer" class="tooltip" title="Edit Devices" ><input type="checkbox" class="standby-editor-switch"></a>',
+
+    console.warn("DOMContentLoaded");
+
+    addButton( (() => {
+        let a_obj = document.createElement("a");
+        a_obj.style.cursor = "pointer";
+        a_obj.classList.add("tooltip");
+        a_obj.title = "More Info";
+        a_obj.href = "/Tools/DriveStandbyMonitor";
+
+
+        let i_obj = document.createElement("i");
+        i_obj.classList.add("fa");
+        i_obj.classList.add("fa-info-circle");
+        i_obj.classList.add("fa-switch");
+
+        a_obj.append(i_obj);
+
+        return a_obj;
+        })(),
         'Standby Averages'
     );
 
+    addButton( (() => {
+        let a_obj = document.createElement("a");
+        a_obj.style.cursor = "pointer";
+        a_obj.classList.add("tooltip");
+        a_obj.title = "Show Devices";
+        // The next two lines are needed for alignment with switch elements
+        a_obj.style.display = "block";
+        a_obj.style.marginTop = "2px";
+        a_obj.style.marginRight = "-6px";
+
+        let i_obj = document.createElement("input");
+        i_obj.type = "checkbox";
+        i_obj.classList.add("standby-switch");
+
+        a_obj.append(i_obj);
+
+        return a_obj;
+        })(),
+        'Standby Averages'
+    );
+
+    addButton( (() => {
+        let a_obj = document.createElement("a");
+        a_obj.style.cursor = "pointer";
+        a_obj.classList.add("tooltip");
+        a_obj.title = "Edit Devices";
+        // The next two lines are needed for alignment with switch elements
+        a_obj.style.display = "block";
+        a_obj.style.marginTop = "2px";
+        a_obj.style.marginRight = "-6px";
+
+        let i_obj = document.createElement("input");
+        i_obj.type = "checkbox";
+        i_obj.classList.add("standby-editor-switch");
+
+        a_obj.append(i_obj);
+
+        return a_obj;
+        })(),
+        'Standby Averages'
+    );
 
     $('.standby-switch').switchButton(
         { 

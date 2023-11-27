@@ -1,14 +1,4 @@
 <?
-
-/* Adjustments for 6.12 UI changes. */
-if (version_compare($version['version'], '6.12.0-beta5', '>')) {
-        $title_classid  = "class='title'";
-        $new_model              = true;
-} else {
-        $title_classid  = "id='title'";
-        $new_model              = false;
-}
-
 #Pull some default data
 libxml_use_internal_errors(true); # Suppress any warnings from xml errors.
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
