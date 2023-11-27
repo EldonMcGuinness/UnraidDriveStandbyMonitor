@@ -8,6 +8,10 @@ $DB_FILE = $defaults["DB_LOCATION"];
 
 # Pull in data about the disks
 $disks = @parse_ini_file("$docroot/state/disks.ini", true);
+$disks = array_merge_recursive(
+    @parse_ini_file("$docroot/state/disks.ini",true)?:[], 
+    @parse_ini_file("$docroot/state/devs.ini",true)?:[]
+);
 
 # Pull in some defaults
 $defaults = @parse_ini_file("$docroot/plugins/DriveStandbyMonitor/default.cfg") ?: [];
@@ -29,6 +33,9 @@ class DisksInfo {
 
         }elseif ( stristr($name, 'parity')  !== false ){
             return rtrim( "Parity ".substr($name, 6) );
+
+        }elseif ( stristr($name, 'dev')  !== false ){
+            return rtrim( "Dev ".substr($name, 3) );
         }else{
             return $name;
         }
@@ -48,6 +55,8 @@ class DisksInfo {
             if ( $val["device"] == "" ) {
                 unset($disks[$key]);
             }
+
+            $val["type"] = $val["type"] ?? "Dev";
 
             $val = [
                 "id" => $val["id"],
@@ -213,24 +222,48 @@ class DSMTools{
             if ($a_id == $b_id) return 0;
             return ($a_id < $b_id) ? -1 : 1;
     
-        }elseif ( $a_name == "Parity" && ( $b_name == "Data" || $b_name == "Cache" )){
+        }elseif ( $a_name == "Parity" && ( $b_name == "Data" || $b_name == "Cache" || $b_name == "Dev" )){
             return -1;
+
         }elseif ( $a_name == "Data" && $b_name == "Data" ){
             if ($a_id == $b_id) return 0;
             return ($a_id < $b_id) ? -1 : 1;
     
         }elseif ( $a_name == "Data" && $b_name == "Parity" ){
             return 1;
+
         }elseif ( $a_name == "Data" && $b_name == "Cache" ){
             return -1;
+
+        }elseif ( $a_name == "Data" && $b_name == "Dev" ){
+            return -1;
+
         }elseif ( $a_name == "Cache" && $b_name == "Cache" ){
             if ($a_id == $b_id) return 0;
             return ($a_id < $b_id) ? -1 : 1;
     
         }elseif ( $a_name == "Cache" && $b_name == "Parity" ){
             return 1;
+
         }elseif ( $a_name == "Cache" && $b_name == "Data" ){
             return 1;
+
+        }elseif ( $a_name == "Cache" && $b_name == "Dev" ){
+            return -1;
+
+        }elseif ( $a_name == "Dev" && $b_name == "Dev" ){
+            if ($a_id == $b_id) return 0;
+            return ($a_id < $b_id) ? -1 : 1;
+    
+        }elseif ( $a_name == "Dev" && $b_name == "Parity" ){
+            return 1;
+
+        }elseif ( $a_name == "Dev" && $b_name == "Data" ){
+            return 1;
+
+        }elseif ( $a_name == "Dev" && $b_name == "Cache" ){
+            return 1;
+
         }
     
         if ($a == $b) return 0;
@@ -255,6 +288,11 @@ class DSMTools{
             return array(
                 "Parity",
                 (int) rtrim( substr($name, 6) )
+            );
+        }elseif ( stristr($name, 'dev')  !== false ){
+            return array(
+                "Dev",
+                (int) rtrim( substr($name, 3) )
             );
         }else{
             return array($name, 0);
