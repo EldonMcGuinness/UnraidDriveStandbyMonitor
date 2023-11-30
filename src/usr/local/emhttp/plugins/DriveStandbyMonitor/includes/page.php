@@ -22,23 +22,34 @@ class DisksInfo {
     private $disks;
     private $date;
     private $disksBySerial = [];
+
+    private function getDigits( $name = null ){
+	    if ($name == null) return null;
+
+	    $digits = null;
+	
+	    if ( preg_match("/(\d+)$/", $name, $digits) ) {
+            return $digits[1];
+        }
+	
+    	return "";
+    }
+
+    private function getChars( $name = null ){
+	    if ($name == null) return null;
+
+	    $chars = null;
+	
+    	if ( preg_match("/(.+?)\s*(\d+)$/", $name, $chars) ){
+            return $chars[1];
+        }
+	
+    	return $name;
+    }
     
     # Helper function used to clean the disk name up a bit
-    private function cleanName($name) {
-        if ( stristr($name, 'disk')  !== false ){
-            return rtrim( "Disk ".substr($name, 4) );
-
-        }elseif ( stristr($name, 'cache') !== false ){
-            return rtrim( "Cache ".substr($name, 5) );
-
-        }elseif ( stristr($name, 'parity')  !== false ){
-            return rtrim( "Parity ".substr($name, 6) );
-
-        }elseif ( stristr($name, 'dev')  !== false ){
-            return rtrim( "Dev ".substr($name, 3) );
-        }else{
-            return $name;
-        }
+    private function cleanName( $name = "" ) {
+        return ucfirst( $this->getChars( $name ) )." ".$this->getDigits( $name );
         
     }
 
@@ -271,34 +282,39 @@ class DSMTools{
     
     }
     
-    # Helper function used to split the disk name into text and number
-    private static function splitName ($name){
-        if ( stristr($name, 'disk')  !== false ){
-            return array(
-                "Disk",
-                (int) rtrim( substr($name, 4))
-            );
-        }elseif ( stristr($name, 'cache') !== false ){
-            return array(
-                "Cache",
-                (int) rtrim( substr($name, 5) )
-            );
-    
-        }elseif ( stristr($name, 'parity')  !== false ){
-            return array(
-                "Parity",
-                (int) rtrim( substr($name, 6) )
-            );
-        }elseif ( stristr($name, 'dev')  !== false ){
-            return array(
-                "Dev",
-                (int) rtrim( substr($name, 3) )
-            );
-        }else{
-            return array($name, 0);
+    private static function getDigits( $name = null ){
+	    if ($name == null) return null;
+
+	    $digits = null;
+	
+	    if ( preg_match("/(\d+)$/", $name, $digits) ) {
+            return $digits[1];
         }
+	
+    	return 0;
     }
-  
+
+    private static function getChars( $name = null ){
+	    if ($name == null) return null;
+
+	    $chars = null;
+	
+    	if ( preg_match("/(.+?)\s*(\d+)$/", $name, $chars) ){
+            return $chars[1];
+        }
+	
+    	return $name;
+    }
+    
+    # Helper function used to split the disk name into text and number
+    private static function splitName( $name = "" ) {
+        return array(
+            ucfirst( DSMTools::getChars( $name ) ),
+            DSMTools::getDigits( $name )
+        );
+        
+    }
+
     # Used to sort disks into order Parity -> Disks -> Cache
     public static function diskSort( &$disks ) {
         uasort($disks, "DSMTools::alphasort");
