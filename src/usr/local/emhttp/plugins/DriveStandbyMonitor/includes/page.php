@@ -22,34 +22,19 @@ class DisksInfo {
     private $disks;
     private $date;
     private $disksBySerial = [];
-
-    private function getDigits( $name = null ){
-	    if ($name == null) return null;
-
-	    $digits = null;
-	
-	    if ( preg_match("/(\d+)$/", $name, $digits) ) {
-            return $digits[1];
-        }
-	
-    	return "";
-    }
-
-    private function getChars( $name = null ){
-	    if ($name == null) return null;
-
-	    $chars = null;
-	
-    	if ( preg_match("/(.+?)\s*(\d+)$/", $name, $chars) ){
-            return $chars[1];
-        }
-	
-    	return $name;
-    }
-    
+       
     # Helper function used to clean the disk name up a bit
     private function cleanName( $name = "" ) {
-        return ucfirst( $this->getChars( $name ) )." ".$this->getDigits( $name );
+        $chars = "";
+        $digits = "";
+
+        list($chars, $digits) = DSMTools::splitName($name);
+
+        $chars = ucfirst($chars);
+
+        if ( $digits === 0 ) $digits = "";
+
+        return $chars." ".$digits;
         
     }
 
@@ -299,15 +284,15 @@ class DSMTools{
 
 	    $chars = null;
 	
-    	if ( preg_match("/(.+?)\s*(\d+)$/", $name, $chars) ){
-            return $chars[1];
-        }
+    	if ( preg_match("/(.+?)\s*(\d+)$/", $name, $chars) ) return $chars[1];
 	
+        if ( $chars == "" ) return "NoName";
+
     	return $name;
     }
     
     # Helper function used to split the disk name into text and number
-    private static function splitName( $name = "" ) {
+    public static function splitName( $name = "" ) {
         return array(
             ucfirst( DSMTools::getChars( $name ) ),
             DSMTools::getDigits( $name )

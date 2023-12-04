@@ -3,14 +3,14 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.11.29-001">
+<!ENTITY version        "2023.12.03-001">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "{https://forums.unraid.net/topic/147982-drive-standby-monitor-plugin-support/}">
-<!ENTITY md5            "31773920e73921466c3f9ad34d4dd0e9">
+<!ENTITY md5            "dcf0a475d5fade7203bf79a581a2b920">
 <!ENTITY branch         "master">
 ]>
 
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Code optimization/cleanup
+
+###2023.11.29-001
 
 - Added Capitalized name for cache drives not named cache
 
