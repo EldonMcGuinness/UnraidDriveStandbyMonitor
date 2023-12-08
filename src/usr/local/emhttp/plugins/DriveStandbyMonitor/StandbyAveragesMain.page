@@ -37,6 +37,11 @@ if( count($DRIVE_STATUS) !== 0 ) {
         $DRIVE_STATUS[$key]['device'] = $DSM->getDevice( $key );
         $DRIVE_STATUS[$key]['type'] = $DSM->getDeviceType( $key );
 
+        if ( empty($DRIVE_STATUS[$key]['device']) ) {
+            unset($DRIVE_STATUS[$key]);
+            continue;
+        }
+
         if ($standby < 1) {
             $DRIVE_STATUS[$key]['avg'] = 0;
         }else{

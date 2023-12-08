@@ -36,6 +36,11 @@ while ($drives = $DB->getRawDataDisks()) {
     $DRIVE_STATUS[ $drives["drive"] ]["name"] = $DSM->getDeviceName( $drives["drive"] );
     $DRIVE_STATUS[ $drives["drive"] ]["device"] = $DSM->getDevice( $drives["drive"] );
     $DRIVE_STATUS[ $drives["drive"] ]["type"] = $DSM->getDeviceType( $drives["drive"] );
+
+    if ( empty( $DRIVE_STATUS[ $drives["drive"] ]["device"] ) ) {
+        unset($DRIVE_STATUS[ $drives["drive"] ]);
+        continue;
+    }
     
 }
 
