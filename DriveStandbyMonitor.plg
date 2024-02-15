@@ -3,14 +3,14 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2023.12.07-002">
+<!ENTITY version        "2024.02.14-001">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "{https://forums.unraid.net/topic/147982-drive-standby-monitor-plugin-support/}">
-<!ENTITY md5            "2a0a453c42a09727fdd5173c4d550400">
+<!ENTITY md5            "f6deb300b62dbedfea822f3e83dd00d8">
 <!ENTITY branch         "master">
 ]>
 
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Drive Standby Monitor
 ###&version;
+
+- Fixed a bug that could prevent proper fetching of data
+
+###2023.12.07-002
 
 - Code fix to prevent removed drives from showing
 

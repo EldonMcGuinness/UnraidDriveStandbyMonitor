@@ -120,12 +120,20 @@ class DSMDB extends SQLite3 {
         if ( $this->getStandbyDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 0 group by 'standby'.'drive';";
             $this->getStandbyDisksResults = $this->query( $sql );
+
         }
 
-        $row = $this->getStandbyDisksResults->fetchArray(SQLITE3_ASSOC);
+        if ( $this->getStandbyDisksResults ) {
+            $row = $this->getStandbyDisksResults->fetchArray(SQLITE3_ASSOC);
+        
+        } else {
+            $row = false;
+
+        }
 
         if ( $row === false ) {
             $this->getStandbyDisksResults = false;
+
         }
 
         return $row;
@@ -137,12 +145,20 @@ class DSMDB extends SQLite3 {
         if ( $this->getLiveDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive', count('standby'.'state') AS count from 'standby' where 'standby'.'state' == 1 group by 'standby'.'drive';";
             $this->getLiveDisksResults = $this->query( $sql );
+
         }
 
-        $row = $this->getLiveDisksResults->fetchArray(SQLITE3_ASSOC);
+        if ( $this->getLiveDisksResults ) {
+            $row = $this->getLiveDisksResults->fetchArray(SQLITE3_ASSOC);
+        
+        } else {
+            $row = false;
+
+        }
 
         if ( $row === false ) {
             $this->getLiveDisksResults = false;
+
         }
 
         return $row;
@@ -154,12 +170,20 @@ class DSMDB extends SQLite3 {
         if ( $this->getRawDataResults === false ) {
             $sql = "SELECT * from 'standby' order by 'standby'.'drive', 'standby'.'date' DESC;";
             $this->getRawDataResults = $this->query( $sql );
+
         }
 
-        $row = $this->getRawDataResults->fetchArray(SQLITE3_ASSOC);
+        if ( $this->getRawDataResults ) {
+            $row = $this->getRawDataResults->fetchArray(SQLITE3_ASSOC);
+
+        } else {
+            $row = false;
+
+        }
 
         if ( $row === false ) {
             $this->getRawDataResults = false;
+
         }
 
         return $row;
@@ -170,12 +194,20 @@ class DSMDB extends SQLite3 {
         if ( $this->getRawDataDisksResults === false ) {
             $sql = "SELECT 'standby'.'drive' from 'standby' group by 'standby'.'drive' order by 'standby'.'drive' ASC;";
             $this->getRawDataDisksResults = $this->query( $sql );
+
         }
 
-        $row = $this->getRawDataDisksResults->fetchArray(SQLITE3_ASSOC);
+        if ( $this->getRawDataDisksResults ) {
+            $row = $this->getRawDataDisksResults->fetchArray(SQLITE3_ASSOC);
+
+        } else {
+            $row = false;
+
+        }
 
         if ( $row === false ) {
             $this->getRawDataDisksResults = false;
+
         }
 
         return $row;
@@ -184,14 +216,19 @@ class DSMDB extends SQLite3 {
     # Log the current disks' information into the database
     public function logEntries ( $disks = [] ) {
         foreach ( $disks as $disk ){
-            $this->exec("INSERT INTO 'standby' ('drive', 'state', 'date') VALUES ('".$disk["id"]."', ".$disk["spundown"].", ".$disk["date"].")");
+            $this->exec("INSERT INTO 'standby' ('drive', 'state', 'date') VALUES ('".$disk["id"]."', ".$disk["spundown"].", ".$disk["date"].");");
+            $this->trimOldEntries();
         }
 
     }
 
+    private function trimOldEntries () {
+        $this->exec("DELETE FROM 'standby' WHERE date(date) < date('now', '-30 day');");
+    }
+
     # Reset the database
     public function resetDB () {
-        $this->exec("DELETE FROM standby;");
+        $this->exec("DELETE FROM 'standby';");
 
     }
     
