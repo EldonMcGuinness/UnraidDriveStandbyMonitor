@@ -1,14 +1,28 @@
 #!/bin/bash
+SCRIPT="DriveStandbyMonitor"
+DATE=$(date +%Y.%m.%d)
 
-VER=$1
+if [ ! -z $1 ]; then
+	VER="$1"
 
-if [ "$1" == "" ]; then
-  VER="build"
+else
+	for VER in {001..999}; do
+		if [ ! -e $SCRIPT.$DATE-$VER.txz ]; then
+			break;
+		fi
+	done
+
 fi
 
-FILE=DriveStandbyMonitor.$(date +%Y.%m.%d)-$VER.txz
+
+FILE=$SCRIPT.$DATE-$VER.txz
 
 cd src
-tar -cJf ../$FILE usr
+tar -vcJf ../$FILE usr
 cd ..
-md5sum $FILE
+
+MD5=$(md5sum $FILE | awk '{print $1}')
+
+
+sed -ri 's/(<!ENTITY version.*").*(">)/\1'$DATE'-'$VER'\2/g' $SCRIPT.plg
+sed -ri 's/(<!ENTITY md5.*").*(">)/\1'$MD5'\2/g' $SCRIPT.plg
