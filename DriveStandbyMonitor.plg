@@ -3,14 +3,14 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name           "DriveStandbyMonitor">
 <!ENTITY author         "Eldon McGuinness">
-<!ENTITY version        "2024.02.23-001">
+<!ENTITY version        "2024.05.09-001">
 <!ENTITY launch         "Tools/DriveStandbyMonitor"> 
 <!ENTITY pluginURL      "https://github.com/EldonMcGuinness/UnraidDriveStandbyMonitor/raw">
 <!ENTITY boot           "/boot/config/plugins/&name;">
 <!ENTITY emhttp         "/usr/local/emhttp/plugins/&name;">
 <!ENTITY source         "&boot;/&name;">
 <!ENTITY supportURL     "{https://forums.unraid.net/topic/147982-drive-standby-monitor-plugin-support/}">
-<!ENTITY md5            "1216a8c46940b28dd80f0a03f6d2e788">
+<!ENTITY md5            "ef32dacfe74976dc23f453c28f090324">
 <!ENTITY branch         "master">
 ]>
 
@@ -126,6 +126,15 @@
 */15 * * * * /usr/local/emhttp/plugins/DriveStandbyMonitor/monitor > /dev/null 2>&1
 ]]>
   </INLINE>
+</FILE>
+
+<!--
+Create gitignore
+-->
+<FILE Name="/boot/config/plugins/DriveStandbyMonitor/.gitignore" Mode="0600">
+<INLINE>
+monitor.db
+</INLINE>
 </FILE>
 
 <!--
