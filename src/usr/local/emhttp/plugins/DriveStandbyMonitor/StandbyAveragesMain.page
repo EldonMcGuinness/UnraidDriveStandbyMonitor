@@ -115,7 +115,7 @@ if( count($DRIVE_STATUS) !== 0 ) {
             </tr>
         <?} else {?>
         <? foreach ( $DRIVE_STATUS as $key => $val) : ?>
-            <tr standby-drive="<?=$key?>" class="standby-drive <? echo ($_COOKIE["standby-drive-".$key] == 'true') ? "hidden" : ""; ?>">
+            <tr standby-drive="<?=$key?>" class="standby-drive <? echo (array_key_exists("standby-drive-".$key, $_COOKIE) && $_COOKIE["standby-drive-".$key] == 'true') ? "hidden" : ""; ?>">
                 <td>
                     <span class="view"><i class="fa fa-eye"></i></span>
                     <span class="info"></span>
